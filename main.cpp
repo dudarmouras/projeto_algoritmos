@@ -39,6 +39,7 @@ struct Agendamento {
     bool armazenadoComoMinutos;
     string professor;
     string disciplina;
+    int idSala;
 
     int DuracaoMinutos() const {
         return fim.minutos - inicio.minutos;
@@ -307,7 +308,9 @@ void ColetarTodosAgendamentosABB(NoSala* no, priority_queue<Agendamento, vector<
     ColetarTodosAgendamentosABB(no->esquerda, agendamentosCurto);
     NoAgendamento* atual = no->sala->cabeca;
     while (atual) {
-        agendamentosCurto->push(atual->ag);
+        Agendamento agComSala = atual->ag;
+        agComSala.idSala = no->sala->id;
+        agendamentosCurto->push(agComSala);
         atual = atual->prox;
     }
     ColetarTodosAgendamentosABB(no->direita, agendamentosCurto);
@@ -324,6 +327,7 @@ void EncontrarAgendamentoMaisCurto() {
 
     const Agendamento maisCurto = agendamentosCurto.top();
     cout << "\n=== Agendamento Mais Curto (Fila de Prioridade/Min-Heap) ===\n";
+    cout << "  Sala: " << maisCurto.idSala << "\n";
     cout << "  Duracao: " << maisCurto.DuracaoMinutos() << " minutos\n";
     cout << "  Horario: " << ConverterMinutosParaHHMM(maisCurto.inicio.minutos)
          << " - " << ConverterMinutosParaHHMM(maisCurto.fim.minutos) << "\n";
@@ -339,7 +343,9 @@ void ColetarAgendamentosParaGrafo(NoSala* no, vector<Agendamento>& todos) {
 
     NoAgendamento* atual = no->sala->cabeca;
     while (atual) {
-        todos.push_back(atual->ag);
+        Agendamento agComSala = atual->ag;
+        agComSala.idSala = no->sala->id;
+        todos.push_back(agComSala);
         atual = atual->prox;
     }
     ColetarAgendamentosParaGrafo(no->direita, todos);
@@ -388,8 +394,8 @@ void EncontrarMelhorCaminhoDijkstra() {
         
         if (proximoEncontrado) {
             cout << "  Transicao Otimizada (Origem -> Destino):\n";
-            cout << "  - Origem (Disc: " << agAtual.disciplina << "): " << ConverterMinutosParaHHMM(agAtual.fim.minutos) << "\n";
-            cout << "  - Destino (Disc: " << agMelhorProximo.disciplina << "): " << ConverterMinutosParaHHMM(agMelhorProximo.inicio.minutos) << "\n";
+            cout << "  - Origem (Sala " << agAtual.idSala << ", Disc: " << agAtual.disciplina << "): " << ConverterMinutosParaHHMM(agAtual.fim.minutos) << "\n";
+            cout << "  - Destino (Sala " << agMelhorProximo.idSala << ", Disc: " << agMelhorProximo.disciplina << "): " << ConverterMinutosParaHHMM(agMelhorProximo.inicio.minutos) << "\n";
             cout << "  - Tempo Ocioso (Custo): " << menorOcio << " minutos\n";
             encontrado = true;
             break;
@@ -458,6 +464,7 @@ bool CarregarAgendamentos(const string& caminho) {
             agendamento.armazenadoComoMinutos = true;
             agendamento.professor = professor;
             agendamento.disciplina = disciplina;
+            agendamento.idSala = idSala;
 
             Sala* sala = ObterOuCriarSalaGlobal(idSala);
             InserirAgendamentoNaSala(*sala, agendamento);
@@ -480,7 +487,7 @@ void MostrarMenu() {
          << "4 - Carregar de arquivo (BST)\n"
          << "5 - Listar todas as salas (BST In-Order)\n"
          << "6 - Encontrar Agendamento Mais Curto (Fila de Prioridade/Heap)\n"
-         << "7 - Buscar Sala por ID (Busca Binaria)\n"
+         << "7 - Buscar Sala por Numero/ID (Busca Binaria)\n"
          << "8 - Listar Agendamentos Ordenados por Disciplina (QuickSort)\n"
          << "9 - Encontrar Melhor Caminho de Agendamentos (Grafo/Dijkstra Simplificado)\n"
          << "0 - Sair\n"
@@ -516,6 +523,7 @@ int main() {
             agendamento.professor = professor;
             agendamento.disciplina = disciplina;
             agendamento.armazenadoComoMinutos = true;
+            agendamento.idSala = idSala;
 
             Sala* sala = ObterOuCriarSalaGlobal(idSala);
             if (InserirAgendamentoNaSala(*sala, agendamento)) cout << "Agendamento inserido.\n";
